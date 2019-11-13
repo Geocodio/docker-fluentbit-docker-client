@@ -4,6 +4,10 @@ This builds a docker image from the official fluentbit image and adds the docker
 
 This allows us to use run e.g. `docker inspect` commands with the `exec` input in fluentbit.
 
+This also installs the following useful packages:
+* `curl`
+* `netcat`
+
 ## Example
 ```
 docker run -it -v /var/run/docker.sock:/var/run/docker.sock geocodio/fluentbit-docker-client
