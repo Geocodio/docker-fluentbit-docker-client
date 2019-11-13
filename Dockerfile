@@ -69,7 +69,7 @@ COPY fluent-bit.conf \
 ENV DOCKER_VERSION "18.09.1"
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends curl netcat -y \
+    && apt-get install --no-install-recommends curl netcat jq -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get autoclean
 
