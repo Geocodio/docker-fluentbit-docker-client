@@ -7,6 +7,7 @@ This allows us to use run e.g. `docker inspect` commands with the `exec` input i
 This also installs the following useful packages:
 * `curl`
 * `netcat`
+* [miller](https://github.com/johnkerl/miller)
 
 ## Example
 ```

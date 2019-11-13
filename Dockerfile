@@ -78,4 +78,7 @@ RUN curl -o /tmp/docker-$DOCKER_VERSION.tgz https://download.docker.com/linux/st
     && mv /tmp/docker/docker /usr/bin \
     && rm -rf /tmp/docker /tmp/docker-$DOCKER_VERSION.tgz
 
+RUN curl -o /usr/bin/mlr https://github.com/johnkerl/miller/releases/download/v5.6.2/mlr.linux.x86_64 \
+    && chmod +x /usr/bin/mlr
+
 CMD ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
