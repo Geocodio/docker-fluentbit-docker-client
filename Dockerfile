@@ -4,7 +4,7 @@
 
 # Sourced from https://github.com/fluent/fluent-bit-docker-image/blob/master/Dockerfile.x86_64
 
-FROM amd64/debian:buster-slim as builder
+FROM amd64/debian:buster-slim
 
 # Fluent Bit version
 ENV FLB_MAJOR 1
