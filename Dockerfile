@@ -4,20 +4,21 @@
 
 # Sourced from https://github.com/fluent/fluent-bit-docker-image/blob/master/Dockerfile.x86_64
 
-FROM amd64/debian:buster-slim
+FROM amd64/debian:bullseye-slim
 
 # Fluent Bit version
 ENV FLB_MAJOR 1
 ENV FLB_MINOR 8
-ENV FLB_PATCH 12
-ENV FLB_VERSION 1.8.12
+ENV FLB_PATCH 4
+ENV FLB_VERSION 1.8.4
 
 ARG FLB_TARBALL=https://github.com/fluent/fluent-bit/archive/v$FLB_VERSION.tar.gz
 ENV FLB_SOURCE $FLB_TARBALL
-RUN mkdir -p /fluent-bit/bin /fluent-bit/etc /fluent-bit/log /tmp/fluent-bit-master/
+RUN mkdir -p /fluent-bit/bin /fluent-bit/etc /fluent-bit/log /tmp/fluent-bit/
 
 ENV DEBIAN_FRONTEND noninteractive
 
+WORKDIR /tmp/fluent-bit/
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
@@ -35,10 +36,10 @@ RUN apt-get update && \
     postgresql-server-dev-all \
     flex \
     bison \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && curl -L -o "/tmp/fluent-bit.tar.gz" ${FLB_SOURCE} \
-    && cd tmp/ && mkdir fluent-bit \
-    && tar zxfv fluent-bit.tar.gz -C ./fluent-bit --strip-components=1 \
-    && cd fluent-bit/build/ \
+    && tar zxfv /tmp/fluent-bit.tar.gz -C /tmp/fluent-bit --strip-components=1 \
     && rm -rf /tmp/fluent-bit/build/*
 
 WORKDIR /tmp/fluent-bit/build/
@@ -53,7 +54,7 @@ RUN cmake -DFLB_RELEASE=On \
           -DFLB_OUT_KAFKA=On \
           -DFLB_OUT_PGSQL=On ..
 
-RUN make -j $(getconf _NPROCESSORS_ONLN)
+RUN make -j "$(getconf _NPROCESSORS_ONLN)"
 RUN install bin/fluent-bit /fluent-bit/bin/
 
 # Configuration files
