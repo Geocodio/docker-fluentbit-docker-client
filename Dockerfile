@@ -2,44 +2,47 @@
 ## Base fluentbit image            ##
 #####################################
 
-# Sourced from https://github.com/fluent/fluent-bit-docker-image/blob/1.3.2/Dockerfile.x86_64
+# Sourced from https://github.com/fluent/fluent-bit-docker-image/blob/master/Dockerfile.x86_64
 
-FROM amd64/debian:stretch-slim
+FROM amd64/debian:buster-slim as builder
 
 # Fluent Bit version
 ENV FLB_MAJOR 1
-ENV FLB_MINOR 3
-ENV FLB_PATCH 2
-ENV FLB_VERSION 1.3.2
+ENV FLB_MINOR 8
+ENV FLB_PATCH 12
+ENV FLB_VERSION 1.8.12
+
+ARG FLB_TARBALL=https://github.com/fluent/fluent-bit/archive/v$FLB_VERSION.tar.gz
+ENV FLB_SOURCE $FLB_TARBALL
+RUN mkdir -p /fluent-bit/bin /fluent-bit/etc /fluent-bit/log /tmp/fluent-bit-master/
 
 ENV DEBIAN_FRONTEND noninteractive
 
-ENV FLB_TARBALL http://github.com/fluent/fluent-bit/archive/v$FLB_VERSION.zip
-RUN mkdir -p /fluent-bit/bin /fluent-bit/etc /fluent-bit/log /tmp/fluent-bit-master/
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      build-essential \
-      cmake \
-      make \
-      wget \
-      unzip \
-      libssl-dev \
-      libasl-dev \
-      libsasl2-dev \
-      pkg-config \
-      libsystemd-dev \
-      zlib1g-dev \
-      ca-certificates \
-      flex \
-      bison \
-    && wget -O "/tmp/fluent-bit-${FLB_VERSION}.zip" ${FLB_TARBALL} \
-    && cd /tmp && unzip "fluent-bit-$FLB_VERSION.zip" \
-    && cd "fluent-bit-$FLB_VERSION"/build/ \
-    && rm -rf /tmp/fluent-bit-$FLB_VERSION/build/*
+    build-essential \
+    curl \
+    ca-certificates \
+    cmake \
+    make \
+    tar \
+    libssl-dev \
+    libsasl2-dev \
+    pkg-config \
+    libsystemd-dev \
+    zlib1g-dev \
+    libpq-dev \
+    postgresql-server-dev-all \
+    flex \
+    bison \
+    && curl -L -o "/tmp/fluent-bit.tar.gz" ${FLB_SOURCE} \
+    && cd tmp/ && mkdir fluent-bit \
+    && tar zxfv fluent-bit.tar.gz -C ./fluent-bit --strip-components=1 \
+    && cd fluent-bit/build/ \
+    && rm -rf /tmp/fluent-bit/build/*
 
-WORKDIR /tmp/fluent-bit-$FLB_VERSION/build/
-RUN cmake -DFLB_DEBUG=On \
+WORKDIR /tmp/fluent-bit/build/
+RUN cmake -DFLB_RELEASE=On \
           -DFLB_TRACE=Off \
           -DFLB_JEMALLOC=On \
           -DFLB_TLS=On \
@@ -47,26 +50,28 @@ RUN cmake -DFLB_DEBUG=On \
           -DFLB_EXAMPLES=Off \
           -DFLB_HTTP_SERVER=On \
           -DFLB_IN_SYSTEMD=On \
-          -DFLB_OUT_KAFKA=On ..
+          -DFLB_OUT_KAFKA=On \
+          -DFLB_OUT_PGSQL=On ..
 
 RUN make -j $(getconf _NPROCESSORS_ONLN)
 RUN install bin/fluent-bit /fluent-bit/bin/
 
 # Configuration files
-COPY fluent-bit.conf \
-     parsers.conf \
-     parsers_java.conf \
-     parsers_extra.conf \
-     parsers_openstack.conf \
-     parsers_cinder.conf \
-     plugins.conf \
+COPY conf/fluent-bit.conf \
+     conf/parsers.conf \
+     conf/parsers_ambassador.conf \
+     conf/parsers_java.conf \
+     conf/parsers_extra.conf \
+     conf/parsers_openstack.conf \
+     conf/parsers_cinder.conf \
+     conf/plugins.conf \
      /fluent-bit/etc/
 
 #####################################
 ## Additional custom changes below ##
 #####################################
 
-ENV DOCKER_VERSION "18.09.1"
+ENV DOCKER_VERSION "20.10.12"
 
 RUN apt-get update \
     && apt-get install --no-install-recommends curl netcat jq -y \
@@ -78,7 +83,9 @@ RUN curl -o /tmp/docker-$DOCKER_VERSION.tgz https://download.docker.com/linux/st
     && mv /tmp/docker/docker /usr/bin \
     && rm -rf /tmp/docker /tmp/docker-$DOCKER_VERSION.tgz
 
-RUN curl -L -o /usr/bin/mlr https://github.com/johnkerl/miller/releases/download/v5.6.2/mlr.linux.x86_64 \
-    && chmod +x /usr/bin/mlr
+RUN curl -o /tmp/miller.tar.gz -L https://github.com/johnkerl/miller/releases/download/v6.0.0/miller_6.0.0_linux_amd64.tar.gz \
+    && mkdir -p /tmp/miller && tar -xzf /tmp/miller.tar.gz -C /tmp/miller \
+    && mv /tmp/miller/mlr /usr/bin \
+    && rm -rf /tmp/miller /tmp/miller.tar.gz
 
 CMD ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
