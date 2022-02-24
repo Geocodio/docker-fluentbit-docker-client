@@ -75,7 +75,7 @@ COPY conf/fluent-bit.conf \
 ENV DOCKER_VERSION "20.10.12"
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends curl netcat jq -y \
+    && apt-get install --no-install-recommends curl netcat jq mariadb-client -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get autoclean
 
