@@ -1,6 +1,6 @@
 # Fluenbit w/ Docker Client
 
-This docker image is based off of the official [Fluentbit 1.3.2](https://hub.docker.com/r/fluent/fluent-bit) Docker image. It adds a couple of small extras such as the docker client.
+This docker image is based off of the official [Fluentbit 1.8](https://hub.docker.com/r/fluent/fluent-bit) Docker image. It adds a couple of small extras such as the docker client.
 
 This allows us to use run e.g. `docker inspect` commands with the `exec` input in fluentbit.
 
