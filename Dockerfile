@@ -8,9 +8,9 @@ FROM amd64/debian:bullseye-slim
 
 # Fluent Bit version
 ENV FLB_MAJOR 1
-ENV FLB_MINOR 8
-ENV FLB_PATCH 4
-ENV FLB_VERSION 1.8.4
+ENV FLB_MINOR 9
+ENV FLB_PATCH 3
+ENV FLB_VERSION 1.9.3
 
 ARG FLB_TARBALL=https://github.com/fluent/fluent-bit/archive/v$FLB_VERSION.tar.gz
 ENV FLB_SOURCE $FLB_TARBALL
