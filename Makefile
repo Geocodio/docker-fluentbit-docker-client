@@ -6,10 +6,10 @@ org = geocodio
 name = fluentbit-docker-client
 
 build:
-	docker build -t $(org)/$(name) .
+	docker build -t $(org)/$(name):2.2 .
 
 deploy:
-	docker push $(org)/$(name)
+	docker push $(org)/$(name):2.2
 
 run:
-	docker run --rm --name=$(name) $(tag)
+	docker run --rm --name=$(name) $(org)/$(name)

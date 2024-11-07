@@ -1,92 +1,56 @@
-#####################################
-## Base fluentbit image            ##
-#####################################
+# Builder stage
+FROM debian:bullseye-slim AS builder
 
-# Sourced from https://github.com/fluent/fluent-bit-docker-image/blob/master/Dockerfile.x86_64
-
-FROM amd64/debian:bullseye-slim
-
-# Fluent Bit version
-ENV FLB_MAJOR 1
-ENV FLB_MINOR 9
-ENV FLB_PATCH 3
-ENV FLB_VERSION 1.9.3
-
-ARG FLB_TARBALL=https://github.com/fluent/fluent-bit/archive/v$FLB_VERSION.tar.gz
-ENV FLB_SOURCE $FLB_TARBALL
-RUN mkdir -p /fluent-bit/bin /fluent-bit/etc /fluent-bit/log /tmp/fluent-bit/
-
-ENV DEBIAN_FRONTEND noninteractive
-
-WORKDIR /tmp/fluent-bit/
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
+# Install Docker CLI
+RUN apt-get update && apt-get install -y \
+    apt-transport-https \
     ca-certificates \
-    cmake \
-    make \
-    tar \
-    libssl-dev \
-    libsasl2-dev \
-    pkg-config \
-    libsystemd-dev \
-    zlib1g-dev \
-    libpq-dev \
-    postgresql-server-dev-all \
-    flex \
-    bison \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -L -o "/tmp/fluent-bit.tar.gz" ${FLB_SOURCE} \
-    && tar zxfv /tmp/fluent-bit.tar.gz -C /tmp/fluent-bit --strip-components=1 \
-    && rm -rf /tmp/fluent-bit/build/*
+    curl \
+    gnupg \
+    lsb-release \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
+    && echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y docker-ce-cli
 
-WORKDIR /tmp/fluent-bit/build/
-RUN cmake -DFLB_RELEASE=On \
-          -DFLB_TRACE=Off \
-          -DFLB_JEMALLOC=On \
-          -DFLB_TLS=On \
-          -DFLB_SHARED_LIB=Off \
-          -DFLB_EXAMPLES=Off \
-          -DFLB_HTTP_SERVER=On \
-          -DFLB_IN_SYSTEMD=On \
-          -DFLB_OUT_KAFKA=On \
-          -DFLB_OUT_PGSQL=On ..
+# Install Redis CLI
+RUN apt-get install -y redis-tools
 
-RUN make -j "$(getconf _NPROCESSORS_ONLN)"
-RUN install bin/fluent-bit /fluent-bit/bin/
-
-# Configuration files
-COPY conf/fluent-bit.conf \
-     conf/parsers.conf \
-     conf/parsers_ambassador.conf \
-     conf/parsers_java.conf \
-     conf/parsers_extra.conf \
-     conf/parsers_openstack.conf \
-     conf/parsers_cinder.conf \
-     conf/plugins.conf \
-     /fluent-bit/etc/
-
-#####################################
-## Additional custom changes below ##
-#####################################
-
-ENV DOCKER_VERSION "20.10.12"
-
-RUN apt-get update \
-    && apt-get install --no-install-recommends curl netcat jq mariadb-client -y \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get autoclean
-
-RUN curl -o /tmp/docker-$DOCKER_VERSION.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz \
-    && tar -xz -C /tmp -f /tmp/docker-$DOCKER_VERSION.tgz \
-    && mv /tmp/docker/docker /usr/bin \
-    && rm -rf /tmp/docker /tmp/docker-$DOCKER_VERSION.tgz
-
-RUN curl -o /tmp/miller.tar.gz -L https://github.com/johnkerl/miller/releases/download/v6.0.0/miller_6.0.0_linux_amd64.tar.gz \
+# Install Miller (awk-like tool for csv/json etc.)
+RUN curl -o /tmp/miller.tar.gz -L https://github.com/johnkerl/miller/releases/download/v6.13.0/miller-6.13.0-linux-amd64.tar.gz \
     && mkdir -p /tmp/miller && tar -xzf /tmp/miller.tar.gz -C /tmp/miller \
-    && mv /tmp/miller/mlr /usr/bin \
+    && mv /tmp/miller/miller-6.13.0-linux-amd64/mlr /usr/bin \
     && rm -rf /tmp/miller /tmp/miller.tar.gz
+    
+# Final stage
+FROM fluent/fluent-bit:2.2.2
 
-CMD ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
+# Copy only the necessary binaries and their dependencies
+COPY --from=builder /usr/bin/docker /usr/bin/
+COPY --from=builder /usr/bin/redis-cli /usr/bin/
+COPY --from=builder /usr/bin/mlr /usr/bin/
+
+COPY --from=builder /lib/aarch64-linux-gnu/libc.so.6 /usr/lib/
+COPY --from=builder /lib/aarch64-linux-gnu/libdl.so.2 /usr/lib/
+COPY --from=builder /lib/aarch64-linux-gnu/libgcc_s.so.1 /usr/lib/
+COPY --from=builder /lib/aarch64-linux-gnu/libgpg-error.so.0 /usr/lib/
+COPY --from=builder /lib/aarch64-linux-gnu/liblzma.so.5 /usr/lib/
+COPY --from=builder /lib/aarch64-linux-gnu/libm.so.6 /usr/lib/
+COPY --from=builder /lib/aarch64-linux-gnu/libpthread.so.0 /usr/lib/
+COPY --from=builder /lib/aarch64-linux-gnu/libresolv.so.2 /usr/lib/
+COPY --from=builder /lib/aarch64-linux-gnu/librt.so.1 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libatomic.so.1 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libcrypto.so.1.1 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libgcrypt.so.20 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/liblua5.1-bitop.so.0 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/liblua5.1-cjson.so.0 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/liblua5.1.so.0 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/liblz4.so.1 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/liblzf.so.1 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libssl.so.1.1 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libstdc++.so.6 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libsystemd.so.0 /usr/lib/
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libzstd.so.1 /usr/lib/

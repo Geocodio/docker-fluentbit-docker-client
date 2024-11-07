@@ -1,6 +1,6 @@
 # Fluenbit w/ Docker Client
 
-This docker image is based off of the official [Fluentbit 1.9](https://hub.docker.com/r/fluent/fluent-bit) Docker image. It adds a couple of small extras such as the docker client.
+This docker image is based off of the official [Fluentbit](https://hub.docker.com/r/fluent/fluent-bit) Docker image. It adds a couple of small extras such as the Docker client.
 
 This allows us to use run e.g. `docker inspect` commands with the `exec` input in fluentbit.
 
@@ -9,6 +9,7 @@ This also installs the following useful packages:
 * `netcat`
 * `jq`
 * [miller](https://github.com/johnkerl/miller)
+* `redis-cli`
 
 ## Example
 ```
