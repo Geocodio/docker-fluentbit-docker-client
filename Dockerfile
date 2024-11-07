@@ -24,8 +24,8 @@ RUN curl -o /tmp/miller.tar.gz -L https://github.com/johnkerl/miller/releases/do
     && mv /tmp/miller/miller-6.13.0-linux-amd64/mlr /usr/bin \
     && rm -rf /tmp/miller /tmp/miller.tar.gz
 
-# Final stage (debug build just means that it's not distroless which is needed for shell support)
-FROM fluent/fluent-bit:2.2.3-debug
+# Final stage (use giantswarm as base image since it has the exec input enabled and other goodies)
+FROM giantswarm/fluent-bit:3.1.10
 
 # Copy only the necessary binaries and their dependencies
 COPY --from=builder /usr/bin/docker /usr/bin/

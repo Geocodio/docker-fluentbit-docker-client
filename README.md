@@ -1,4 +1,4 @@
-# Fluenbit w/ Docker Client
+# Fluentbit w/ Docker Client
 
 This docker image is based off of the official [Fluentbit](https://hub.docker.com/r/fluent/fluent-bit) Docker image. It adds a couple of small extras such as the Docker client.
 
