@@ -23,7 +23,7 @@ RUN curl -o /tmp/miller.tar.gz -L https://github.com/johnkerl/miller/releases/do
     && mkdir -p /tmp/miller && tar -xzf /tmp/miller.tar.gz -C /tmp/miller \
     && mv /tmp/miller/miller-6.13.0-linux-amd64/mlr /usr/bin \
     && rm -rf /tmp/miller /tmp/miller.tar.gz
-    
+
 # Final stage (debug build just means that it's not distroless which is needed for shell support)
 FROM fluent/fluent-bit:2.2.3-debug
 
@@ -32,25 +32,28 @@ COPY --from=builder /usr/bin/docker /usr/bin/
 COPY --from=builder /usr/bin/redis-cli /usr/bin/
 COPY --from=builder /usr/bin/mlr /usr/bin/
 
-COPY --from=builder /lib/aarch64-linux-gnu/libc.so.6 /usr/lib/
-COPY --from=builder /lib/aarch64-linux-gnu/libdl.so.2 /usr/lib/
-COPY --from=builder /lib/aarch64-linux-gnu/libgcc_s.so.1 /usr/lib/
-COPY --from=builder /lib/aarch64-linux-gnu/libgpg-error.so.0 /usr/lib/
-COPY --from=builder /lib/aarch64-linux-gnu/liblzma.so.5 /usr/lib/
-COPY --from=builder /lib/aarch64-linux-gnu/libm.so.6 /usr/lib/
-COPY --from=builder /lib/aarch64-linux-gnu/libpthread.so.0 /usr/lib/
-COPY --from=builder /lib/aarch64-linux-gnu/libresolv.so.2 /usr/lib/
-COPY --from=builder /lib/aarch64-linux-gnu/librt.so.1 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libatomic.so.1 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libcrypto.so.1.1 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libgcrypt.so.20 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libjemalloc.so.2 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/liblua5.1-bitop.so.0 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/liblua5.1-cjson.so.0 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/liblua5.1.so.0 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/liblz4.so.1 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/liblzf.so.1 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libssl.so.1.1 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libstdc++.so.6 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libsystemd.so.0 /usr/lib/
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libzstd.so.1 /usr/lib/
+COPY --from=builder /lib/x86_64-linux-gnu/libc.so.6 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/libdl.so.2 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/libpthread.so.0 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/libresolv.so.2 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/libc.so.6 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/libdl.so.2 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/libgcc_s.so.1 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/libgpg-error.so.0 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/liblzma.so.5 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/libm.so.6 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/libpthread.so.0 /usr/lib
+COPY --from=builder /lib/x86_64-linux-gnu/librt.so.1 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libatomic.so.1 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libgcrypt.so.20 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/liblua5.1-bitop.so.0 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/liblua5.1-cjson.so.0 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/liblua5.1.so.0 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/liblz4.so.1 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/liblzf.so.1 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libssl.so.1.1 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libsystemd.so.0 /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libzstd.so.1 /usr/lib
