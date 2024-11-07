@@ -25,7 +25,7 @@ RUN curl -o /tmp/miller.tar.gz -L https://github.com/johnkerl/miller/releases/do
     && rm -rf /tmp/miller /tmp/miller.tar.gz
 
 # Final stage (use giantswarm as base image since it has the exec input enabled and other goodies)
-FROM giantswarm/fluent-bit:3.1.10
+FROM giantswarm/fluent-bit:3.1.10-debug
 
 # Copy only the necessary binaries and their dependencies
 COPY --from=builder /usr/bin/docker /usr/bin/
