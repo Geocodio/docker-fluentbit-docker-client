@@ -1,5 +1,5 @@
 # Builder stage
-FROM debian:bullseye-slim AS builder
+FROM debian:bookworm-slim AS builder
 
 # Install Docker CLI
 RUN apt-get update && apt-get install -y \
@@ -32,28 +32,7 @@ COPY --from=builder /usr/bin/docker /usr/bin/
 COPY --from=builder /usr/bin/redis-cli /usr/bin/
 COPY --from=builder /usr/bin/mlr /usr/bin/
 
-COPY --from=builder /lib/x86_64-linux-gnu/libc.so.6 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/libdl.so.2 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/libpthread.so.0 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/libresolv.so.2 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/libc.so.6 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/libdl.so.2 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/libgcc_s.so.1 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/libgpg-error.so.0 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/liblzma.so.5 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/libm.so.6 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/libpthread.so.0 /usr/lib
-COPY --from=builder /lib/x86_64-linux-gnu/librt.so.1 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libatomic.so.1 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libgcrypt.so.20 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libjemalloc.so.2 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/liblua5.1-bitop.so.0 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/liblua5.1-cjson.so.0 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/liblua5.1.so.0 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/liblz4.so.1 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/liblzf.so.1 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libssl.so.1.1 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libsystemd.so.0 /usr/lib
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libzstd.so.1 /usr/lib
+
+COPY --from=builder /lib/x86_64-linux-gnu/*.so* /usr/lib
+COPY --from=builder /usr/lib/x86_64-linux-gnu/*.so* /usr/lib
+
